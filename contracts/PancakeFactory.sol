@@ -12,10 +12,31 @@ contract PancakeFactory is IPancakeFactory {
     mapping(address => mapping(address => address)) public getPair;
     address[] public allPairs;
 
+    bool public needAdminApproval;
+
+    address public admin; // need admin approval to create a pool at the beginning
+
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 
+    modifier onlyAdmin(){
+        require(admin == msg.sender, "Pancake: no permission");
+        _;
+    }
     constructor(address _feeToSetter) public {
         feeToSetter = _feeToSetter;
+        needAdminApproval = true;
+        admin = msg.sender;
+    }
+
+    function setAdminApproval() external onlyAdmin{
+        if(needAdminApproval == true){
+            needAdminApproval = false;
+        }
+    }
+
+    function changeAdmin(address _newAd) external onlyAdmin{
+        require(_newAd != address(0));
+        admin = _newAd;
     }
 
     function allPairsLength() external view returns (uint) {
@@ -23,6 +44,10 @@ contract PancakeFactory is IPancakeFactory {
     }
 
     function createPair(address tokenA, address tokenB) external returns (address pair) {
+        if(needAdminApproval == true){
+            require(admin == msg.sender, "Pancake: no permission");
+        }
+
         require(tokenA != tokenB, 'Pancake: IDENTICAL_ADDRESSES');
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), 'Pancake: ZERO_ADDRESS');
