@@ -43,19 +43,27 @@ contract PancakeFactory is IPancakeFactory {
         return allPairs.length;
     }
 
-    function createPair(address tokenA, address tokenB) external returns (address pair) {
+    function createPair(address tokenA, address tokenB, uint _startingSwapTime) external returns (address pair) {
         if(needAdminApproval == true){
             require(admin == msg.sender, "Pancake: no permission");
         }
 
+        uint startingSwapTime = _startingSwapTime == 0 ? now: _startingSwapTime;
         require(tokenA != tokenB, 'Pancake: IDENTICAL_ADDRESSES');
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), 'Pancake: ZERO_ADDRESS');
         require(getPair[token0][token1] == address(0), 'Pancake: PAIR_EXISTS'); // single check is sufficient
+        // bytes memory bytecode = type(PancakePair).creationCode;
+        // bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+        // assembly {
+        //     pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        // }
+
         bytes memory bytecode = type(PancakePair).creationCode;
+        bytes memory deployedByteCode = abi.encodePacked(bytecode, abi.encode(startingSwapTime));
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         assembly {
-            pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
+            pair := create2(0, add(deployedByteCode, 32), mload(deployedByteCode), salt)
         }
         IPancakePair(pair).initialize(token0, token1);
         getPair[token0][token1] = pair;

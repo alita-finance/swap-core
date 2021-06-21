@@ -27,12 +27,18 @@ contract PancakePair is IPancakePair, PancakeERC20 {
     uint public price1CumulativeLast;
     uint public kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
 
+    uint public startingSwapTime; 
     uint private unlocked = 1;
     modifier lock() {
         require(unlocked == 1, 'Pancake: LOCKED');
         unlocked = 0;
         _;
         unlocked = 1;
+    }
+
+    modifier allowSwap(){
+        require(now >= startingSwapTime, 'Pancake: not allow swap');
+        _;
     }
 
     function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
@@ -58,8 +64,9 @@ contract PancakePair is IPancakePair, PancakeERC20 {
     );
     event Sync(uint112 reserve0, uint112 reserve1);
 
-    constructor() public {
+    constructor(uint _startingSwapTime) public {
         factory = msg.sender;
+        startingSwapTime = _startingSwapTime;
     }
 
     // called once by the factory at time of deployment
@@ -156,7 +163,7 @@ contract PancakePair is IPancakePair, PancakeERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external lock {
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external lock allowSwap {
         require(amount0Out > 0 || amount1Out > 0, 'Pancake: INSUFFICIENT_OUTPUT_AMOUNT');
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         require(amount0Out < _reserve0 && amount1Out < _reserve1, 'Pancake: INSUFFICIENT_LIQUIDITY');
