@@ -64,9 +64,8 @@ contract VSwapPair is IVSwapPair, VSwapERC20 {
     );
     event Sync(uint112 reserve0, uint112 reserve1);
 
-    constructor(uint _startingSwapTime) public {
+    constructor() public {
         factory = msg.sender;
-        startingSwapTime = _startingSwapTime;
     }
 
     // called once by the factory at time of deployment
@@ -74,6 +73,12 @@ contract VSwapPair is IVSwapPair, VSwapERC20 {
         require(msg.sender == factory, 'VSwap: FORBIDDEN'); // sufficient check
         token0 = _token0;
         token1 = _token1;
+    }
+
+    function setSwapTime(uint _startingSwapTime) external {
+        // require(msg.sender == factory, 'Pancake: FORBIDDEN'); // sufficient check
+        startingSwapTime = _startingSwapTime;
+        
     }
 
     // update reserves and, on the first call per block, price accumulators
@@ -103,7 +108,7 @@ contract VSwapPair is IVSwapPair, VSwapERC20 {
                 uint rootKLast = Math.sqrt(_kLast);
                 if (rootK > rootKLast) {
                     uint numerator = totalSupply.mul(rootK.sub(rootKLast)).mul(3);
-                    uint denominator = rootK.mul(17).add((rootKLast.mul(3));
+                    uint denominator = rootK.mul(17).add(rootKLast.mul(3));
                     uint liquidity = numerator / denominator;
                     if (liquidity > 0) _mint(feeTo, liquidity);
                 }

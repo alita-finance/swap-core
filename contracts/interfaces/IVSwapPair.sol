@@ -49,4 +49,5 @@ interface IVSwapPair {
     function sync() external;
 
     function initialize(address, address) external;
+    function setSwapTime(uint) external;
 }
