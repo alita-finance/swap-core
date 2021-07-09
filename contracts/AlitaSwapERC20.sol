@@ -7,7 +7,7 @@ contract AlitaSwapERC20 is IAlitaSwapERC20 {
     using SafeMath for uint;
 
     string public constant name = 'AlitaSwap LPs';
-    string public constant symbol = 'AlitaSwap-LP';
+    string public constant symbol = 'ALI-LP';
     uint8 public constant decimals = 18;
     uint  public totalSupply;
     mapping(address => uint) public balanceOf;
