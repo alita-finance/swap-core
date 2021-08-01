@@ -76,7 +76,7 @@ contract AlitaSwapPair is IAlitaSwapPair, AlitaSwapERC20 {
     }
 
     function setSwapTime(uint _startingSwapTime) external {
-        // require(msg.sender == factory, 'Pancake: FORBIDDEN'); // sufficient check
+        require(msg.sender == factory, 'AlitaSWap: FORBIDDEN'); // sufficient check
         startingSwapTime = _startingSwapTime;
         
     }
